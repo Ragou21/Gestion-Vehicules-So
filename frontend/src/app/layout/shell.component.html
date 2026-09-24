@@ -1,0 +1,67 @@
+<div class="min-h-screen bg-page">
+  <header class="border-b border-gray-200 bg-white">
+    <div class="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
+      <a routerLink="/" class="flex items-center gap-3">
+        <app-logo />
+        <div>
+          <p class="text-sm font-semibold tracking-wide text-ink">SONABEL</p>
+          <p class="text-xs text-gray-500">Gestion des véhicules de service</p>
+        </div>
+      </a>
+      <nav class="hidden items-center gap-4 text-sm font-medium md:flex">
+        <a
+          [routerLink]="auth.homePath()"
+          routerLinkActive="text-accent"
+          class="text-gray-600 hover:text-accent"
+          >Tableau de bord</a
+        >
+        @if (auth.role() === 'AGENT') {
+          <a routerLink="/demandes/nouvelle" routerLinkActive="text-accent" class="text-gray-600 hover:text-accent"
+            >Nouvelle demande</a
+          >
+        }
+        <a routerLink="/recherche" routerLinkActive="text-accent" class="text-gray-600 hover:text-accent">Recherche</a>
+      </nav>
+      <div class="flex items-center gap-3 text-sm">
+        @if (!connectivity.online()) {
+          <span class="rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">Hors-ligne</span>
+        }
+        <span class="hidden text-gray-600 sm:inline">
+          {{ auth.utilisateur()?.prenom }} {{ auth.utilisateur()?.nom }}
+        </span>
+        <button type="button" class="rounded-md border border-gray-200 px-3 py-1.5 hover:bg-gray-50" (click)="auth.logout()">
+          Déconnexion
+        </button>
+      </div>
+    </div>
+  </header>
+
+  @if (toast.message()) {
+    <div
+      class="mx-auto mt-3 max-w-6xl px-4"
+      [class.text-red-800]="toast.kind() === 'error'"
+      [class.text-emerald-800]="toast.kind() === 'success'"
+    >
+      <div
+        class="rounded-md px-4 py-2 text-sm"
+        [class.bg-red-50]="toast.kind() === 'error'"
+        [class.bg-emerald-50]="toast.kind() === 'success'"
+        [class.bg-blue-50]="toast.kind() === 'info'"
+      >
+        {{ toast.message() }}
+      </div>
+    </div>
+  }
+
+  <main class="mx-auto max-w-6xl space-y-4 px-4 py-6">
+    <app-alert-banner [demandes]="alertes" />
+    <nav class="flex gap-3 text-sm font-medium md:hidden">
+      <a [routerLink]="auth.homePath()" class="text-accent">Accueil</a>
+      @if (auth.role() === 'AGENT') {
+        <a routerLink="/demandes/nouvelle">Demande</a>
+      }
+      <a routerLink="/recherche">Recherche</a>
+    </nav>
+    <router-outlet />
+  </main>
+</div>

@@ -1,0 +1,99 @@
+<div class="mx-auto max-w-2xl rounded-md border border-gray-200 bg-white p-6 shadow-sm">
+  <h1 class="text-xl font-semibold">{{ editId() ? 'Modifier la demande' : 'Nouvelle demande' }}</h1>
+  <p class="mt-1 text-sm text-gray-500">
+    La saisie est possible hors-ligne. La confirmation exige une connexion pour le contrôle anti-doublon.
+  </p>
+
+  @if (!connectivity.online()) {
+    <p class="mt-3 rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">
+      Brouillon enregistré localement. Reconnectez-vous pour soumettre.
+    </p>
+  }
+
+  <form class="mt-6 space-y-4" [formGroup]="form" (ngSubmit)="submit()">
+    <label class="block text-sm font-medium">
+      Véhicule disponible
+      <select formControlName="vehiculeId" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2">
+        <option value="">Choisir un véhicule</option>
+        @for (v of vehicules; track v.id) {
+          <option [value]="v.id">{{ v.immatriculation }} — {{ v.marque }} {{ v.modele }}</option>
+        }
+      </select>
+    </label>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <label class="block text-sm font-medium">
+        Agence
+        <input formControlName="agence" list="agences" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2" />
+        <datalist id="agences">
+          @for (a of agences; track a) {
+            <option [value]="a"></option>
+          }
+        </datalist>
+      </label>
+      <label class="block text-sm font-medium">
+        Département
+        <input
+          formControlName="departement"
+          list="departements"
+          class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
+        />
+        <datalist id="departements">
+          @for (d of departements; track d) {
+            <option [value]="d"></option>
+          }
+        </datalist>
+      </label>
+    </div>
+
+    <label class="block text-sm font-medium">
+      Motif de sortie <span class="text-red-600">*</span>
+      <textarea
+        formControlName="motifSortie"
+        rows="4"
+        class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
+      ></textarea>
+    </label>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <label class="block text-sm font-medium">
+        Date/heure de sortie prévue
+        <input type="datetime-local" formControlName="dateHeureSortie" class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2" />
+      </label>
+      <label class="block text-sm font-medium">
+        Date/heure de retour prévue
+        <input
+          type="datetime-local"
+          formControlName="dateHeureRetourPrevue"
+          class="mt-1 w-full rounded-md border border-gray-300 px-3 py-2"
+        />
+      </label>
+    </div>
+
+    <button
+      type="submit"
+      class="w-full rounded-md bg-accent px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+      [disabled]="loading()"
+    >
+      {{ loading() ? 'Envoi…' : 'Soumettre la demande' }}
+    </button>
+  </form>
+</div>
+
+@if (showConflit) {
+  <div class="fixed inset-0 z-20 flex items-center justify-center bg-black/40 p-4">
+    <div class="w-full max-w-md rounded-md bg-white p-6 shadow-lg">
+      <h2 class="text-lg font-semibold">Véhicule déjà en cours</h2>
+      <p class="mt-2 text-sm text-gray-600">
+        Cette immatriculation a déjà une demande en cours. Vous pouvez choisir un autre véhicule ou confirmer que le
+        véhicule est de nouveau disponible.
+      </p>
+      <div class="mt-4 flex justify-end gap-2">
+        <button type="button" class="rounded-md border px-3 py-2 text-sm" (click)="showConflit = false">Changer</button>
+        <button type="button" class="rounded-md bg-accent px-3 py-2 text-sm text-white" (click)="confirmerMalgreConflit()">
+          Confirmer quand même
+        </button>
+      </div>
+    </div>
+  </div>
+}

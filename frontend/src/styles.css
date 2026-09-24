@@ -1,0 +1,19 @@
+@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+@theme {
+  --font-sans: Inter, Roboto, system-ui, sans-serif;
+  --color-accent: #2563eb;
+  --color-ink: #1f2937;
+  --color-page: #f9fafb;
+  --radius-md: 8px;
+}
+
+html,
+body {
+  @apply m-0 min-h-full bg-page font-sans text-ink antialiased;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}

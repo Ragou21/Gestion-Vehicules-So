@@ -1,0 +1,80 @@
+<div>
+  <h1 class="text-2xl font-semibold">Demandes à traiter</h1>
+  <p class="text-sm text-gray-500">Approuvez, refusez ou enregistrez les retours.</p>
+</div>
+
+<div class="flex flex-wrap gap-2">
+  @for (o of onglets; track o.id) {
+    <button
+      type="button"
+      class="rounded-md px-3 py-1.5 text-sm"
+      [class.bg-accent]="onglet() === o.id"
+      [class.text-white]="onglet() === o.id"
+      [class.bg-white]="onglet() !== o.id"
+      [class.border]="onglet() !== o.id"
+      [class.border-gray-200]="onglet() !== o.id"
+      (click)="onglet.set(o.id)"
+    >
+      {{ o.label }}
+    </button>
+  }
+</div>
+
+<div class="overflow-hidden rounded-md border border-gray-200 bg-white shadow-sm">
+  <table class="min-w-full divide-y divide-gray-200 text-sm">
+    <thead class="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
+      <tr>
+        <th class="px-4 py-3">Agent</th>
+        <th class="px-4 py-3">Immatriculation</th>
+        <th class="px-4 py-3">Motif</th>
+        <th class="px-4 py-3">Dates</th>
+        <th class="px-4 py-3">Statut</th>
+        <th class="px-4 py-3">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      @if (loading()) {
+        <tr>
+          <td colspan="6" class="px-4 py-6 text-gray-500">Chargement…</td>
+        </tr>
+      } @else if (!filtered.length) {
+        <tr>
+          <td colspan="6" class="px-4 py-6 text-gray-500">Aucune demande.</td>
+        </tr>
+      } @else {
+        @for (d of filtered; track d.id) {
+          <tr>
+            <td class="px-4 py-3 font-medium">{{ d.utilisateur?.prenom }} {{ d.utilisateur?.nom }}</td>
+            <td class="px-4 py-3">{{ d.immatriculation }}</td>
+            <td class="max-w-xs truncate px-4 py-3">{{ d.motifSortie }}</td>
+            <td class="px-4 py-3 text-xs text-gray-600">
+              {{ format(d.dateHeureSortie) }}
+              @if (d.dateHeureRetourPrevue) {
+                <br />→ {{ format(d.dateHeureRetourPrevue) }}
+              }
+            </td>
+            <td class="px-4 py-3"><app-status-badge [statut]="d.statut" /></td>
+            <td class="px-4 py-3">
+              <div class="flex flex-wrap gap-2">
+                <a [routerLink]="['/demandes', d.id]" class="text-accent">Détail</a>
+                @if (d.statut === 'EN_ATTENTE') {
+                  <button type="button" class="rounded-md bg-emerald-600 px-2 py-1 text-xs font-semibold text-white" (click)="changer(d, 'ACCEPTEE')">
+                    Approuver
+                  </button>
+                  <button type="button" class="rounded-md bg-red-600 px-2 py-1 text-xs font-semibold text-white" (click)="changer(d, 'REFUSEE')">
+                    Refuser
+                  </button>
+                }
+                @if (d.statut === 'EXECUTEE' && !d.dateHeureRetour) {
+                  <a [routerLink]="['/demandes', d.id]" [queryParams]="{ retour: 1 }" class="rounded-md bg-accent px-2 py-1 text-xs font-semibold text-white">
+                    Enregistrer le retour
+                  </a>
+                }
+              </div>
+            </td>
+          </tr>
+        }
+      }
+    </tbody>
+  </table>
+</div>

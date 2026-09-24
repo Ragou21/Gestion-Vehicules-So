@@ -1,0 +1,111 @@
+@if (loading()) {
+  <p class="text-sm text-gray-500">Chargement…</p>
+} @else if (!demande) {
+  <p class="rounded-md bg-white p-6 text-sm text-gray-500">Demande introuvable (peut-être absente du cache hors-ligne).</p>
+} @else {
+  <div class="space-y-4">
+    <div class="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <h1 class="text-2xl font-semibold">{{ demande.immatriculation }}</h1>
+        <p class="text-sm text-gray-500">Demande n° {{ demande.id }}</p>
+      </div>
+      <app-status-badge [statut]="demande.statut" />
+    </div>
+
+    <div class="grid gap-4 md:grid-cols-2">
+      <section class="rounded-md border border-gray-200 bg-white p-5 shadow-sm">
+        <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">Agent demandeur</h2>
+        <p class="font-medium">{{ demande.utilisateur?.prenom }} {{ demande.utilisateur?.nom }}</p>
+        <p class="text-sm text-gray-500">{{ demande.utilisateur?.email }}</p>
+        <p class="text-sm text-gray-500">{{ demande.utilisateur?.telephone }}</p>
+      </section>
+      <section class="rounded-md border border-gray-200 bg-white p-5 shadow-sm">
+        <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">Véhicule</h2>
+        <p class="font-medium">{{ demande.immatriculation }}</p>
+        <p class="text-sm text-gray-500">
+          {{ demande.vehicule?.marque }} {{ demande.vehicule?.modele }}
+        </p>
+        <p class="text-sm text-gray-500">{{ demande.agence }} · {{ demande.departement }}</p>
+      </section>
+    </div>
+
+    <section class="rounded-md border border-gray-200 bg-white p-5 shadow-sm">
+      <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">Motif et dates</h2>
+      <p class="whitespace-pre-wrap text-sm">{{ demande.motifSortie }}</p>
+      <dl class="mt-4 grid gap-2 text-sm sm:grid-cols-2">
+        <div><dt class="text-gray-500">Sortie</dt><dd>{{ format(demande.dateHeureSortie) }}</dd></div>
+        <div><dt class="text-gray-500">Retour prévu</dt><dd>{{ format(demande.dateHeureRetourPrevue) }}</dd></div>
+        <div><dt class="text-gray-500">Retour réel</dt><dd>{{ format(demande.dateHeureRetour) }}</dd></div>
+        @if (demande.motifRetour) {
+          <div class="sm:col-span-2"><dt class="text-gray-500">Observation retour</dt><dd>{{ demande.motifRetour }}</dd></div>
+        }
+      </dl>
+    </section>
+
+    <section class="rounded-md border border-gray-200 bg-white p-5 shadow-sm">
+      <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">Historique des statuts</h2>
+      <ol class="space-y-2 text-sm">
+        @for (s of historique(); track s.label) {
+          <li class="flex justify-between gap-4">
+            <span>{{ s.label }}</span>
+            <span class="text-gray-500">{{ format(s.date) }}</span>
+          </li>
+        }
+      </ol>
+      @if (user?.role === 'AGENT') {
+        <p class="mt-3 text-xs text-gray-500">{{ editCountdown() }}</p>
+      }
+    </section>
+
+    <div class="flex flex-wrap gap-2">
+      @if (canEdit()) {
+        <a [routerLink]="['/demandes', demande.id, 'modifier']" class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm">
+          Modifier
+        </a>
+      }
+      @if (canApprove()) {
+        <button type="button" class="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white" (click)="changer('ACCEPTEE')">
+          Approuver
+        </button>
+      }
+      @if (canRefuse()) {
+        <button type="button" class="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white" (click)="changer('REFUSEE')">
+          Refuser
+        </button>
+      }
+      @if (canCancel()) {
+        <button type="button" class="rounded-md border border-gray-300 px-4 py-2 text-sm" (click)="changer('ANNULEE')">
+          Annuler la demande
+        </button>
+      }
+      @if (canSortie()) {
+        <button type="button" class="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white" (click)="changer('EXECUTEE')">
+          Marquer la sortie
+        </button>
+      }
+      @if (canRetour()) {
+        <button type="button" class="rounded-md bg-ink px-4 py-2 text-sm font-semibold text-white" (click)="showRetour = true">
+          Enregistrer le retour
+        </button>
+      }
+    </div>
+
+    @if (showRetour) {
+      <form class="rounded-md border border-gray-200 bg-white p-5 shadow-sm" [formGroup]="retourForm" (ngSubmit)="enregistrerRetour()">
+        <h2 class="mb-3 font-semibold">Retour du véhicule</h2>
+        <label class="block text-sm font-medium">
+          Date/heure de retour
+          <input type="datetime-local" formControlName="dateHeureRetour" class="mt-1 w-full rounded-md border px-3 py-2" />
+        </label>
+        <label class="mt-3 block text-sm font-medium">
+          Observation
+          <textarea formControlName="motifRetour" rows="3" class="mt-1 w-full rounded-md border px-3 py-2"></textarea>
+        </label>
+        <div class="mt-3 flex gap-2">
+          <button type="submit" class="rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white">Enregistrer</button>
+          <button type="button" class="rounded-md border px-4 py-2 text-sm" (click)="showRetour = false">Fermer</button>
+        </div>
+      </form>
+    }
+  </div>
+}

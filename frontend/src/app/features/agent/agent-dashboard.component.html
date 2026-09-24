@@ -1,0 +1,40 @@
+<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+  <div>
+    <h1 class="text-2xl font-semibold">Mes demandes</h1>
+    <p class="text-sm text-gray-500">Consultez vos réservations et leur statut.</p>
+  </div>
+  <a routerLink="/demandes/nouvelle" class="inline-flex rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white">
+    Nouvelle demande
+  </a>
+</div>
+
+<div class="flex flex-wrap gap-2">
+  @for (f of filtres; track f.id) {
+    <button
+      type="button"
+      class="rounded-md px-3 py-1.5 text-sm"
+      [class.bg-accent]="filtre() === f.id"
+      [class.text-white]="filtre() === f.id"
+      [class.bg-white]="filtre() !== f.id"
+      [class.border]="filtre() !== f.id"
+      [class.border-gray-200]="filtre() !== f.id"
+      (click)="filtre.set(f.id)"
+    >
+      {{ f.label }}
+    </button>
+  }
+</div>
+
+@if (loading()) {
+  <p class="text-sm text-gray-500">Chargement…</p>
+} @else if (!filtered.length) {
+  <p class="rounded-md border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-gray-500">
+    Aucune demande pour ce filtre.
+  </p>
+} @else {
+  <div class="grid gap-3 md:grid-cols-2">
+    @for (d of filtered; track d.id) {
+      <app-demande-card [demande]="d" />
+    }
+  </div>
+}
